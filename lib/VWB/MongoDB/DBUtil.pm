@@ -44,6 +44,26 @@ sub _initConnection {
     my $self = shift;
 }
 
+sub insertRecord {
+
+    my $self = shift;
+    my ($record) = @_;
+
+    if (!defined($record)){
+        $self->{_logger}->logconfess("record was not defined");
+    }
+
+ 
+    $self->{_logger}->logconfess("NOT YET IMPLEMENTED");
+}
+
+
+sub getRecords {
+
+    my $self = shift;
+
+    $self->{_logger}->logconfess("NOT YET IMPLEMENTED");
+}
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
