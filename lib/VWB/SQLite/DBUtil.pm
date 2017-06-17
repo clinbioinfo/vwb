@@ -2,7 +2,7 @@ package VWB::SQLite::DBUtil;
 
 use Moose;
 use VWB::Logger;
-use VWB::SQLite::Config::Manager;
+use VWB::Config::Manager;
 
 extends 'VWB::DBUtil';
 
