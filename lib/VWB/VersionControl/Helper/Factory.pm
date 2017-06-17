@@ -1,13 +1,14 @@
-package VWB::DBUtil::Factory;
+package VWB::VersionControl::Helper::Factory;
 
 use Moose;
 
 use VWB::Logger;
+use VWB::VersionControl::Git::Helper;
 
 use constant TRUE  => 1;
 use constant FALSE => 0;
 
-use constant DEFAULT_TYPE => 'mongodb';
+use constant DEFAULT_TYPE => 'git';
 
 ## Singleton support
 my $instance;
@@ -21,23 +22,15 @@ has 'type' => (
     default    => DEFAULT_TYPE
     );
 
-has 'database' => (
-    is         => 'rw',
-    isa        => 'Str',
-    writer     => 'setDatabase',
-    reader     => 'getDatabase',
-    required   => FALSE,
-    );
-
 sub getInstance {
 
     if (!defined($instance)){
 
-        $instance = new VWB::DBUtil::Factory(@_);
+        $instance = new VWB::VersionControl::Helper::Factory(@_);
 
         if (!defined($instance)){
 
-            confess "Could not instantiate VWB::DBUtil::Factory";
+            confess "Could not instantiate VWB::VersionControl::Helper::Factory";
         }
     }
 
@@ -125,17 +118,18 @@ sub create {
         $self->{_logger}->logconfess("type was not defined");
     }
 
-    if (lc($type) eq 'mongodb'){
+    if (lc($type) eq 'git'){
 
-        my $dbutil = VWB::MongoDB::DBUtil::getInstance(@_);
-        if (!defined($dbutil)){
-            $self->{_logger}->logconfess("dbutil was not defined");
+        my $helper = VWB::VersionControl::Git::Helper::getInstance(@_);
+        if (!defined($helper)){
+            $self->{_logger}->logconfess("Could not instantiate VWB::VersionControl::Git::Helper");
         }
+
+        return $helper;
     }
     else {
-        $self->{_logger}->logconfess("Unsupported database type '$type'");
+        $self->{_logger}->logconfess("Unsupported helper type '$type'");
     }
-
 
 }
 
@@ -148,7 +142,7 @@ __END__
 
 =head1 NAME
 
- VWB::DBUtil::Factory
+ VWB::VersionControl::Helper::Factory
 
  A module factory for creating DBUtil instances.
 
@@ -158,8 +152,8 @@ __END__
 
 =head1 SYNOPSIS
 
- use VWB::DBUtil::Factory;
- my $factory = VWB::DBUtil::Factory::getIntance();
+ use VWB::VersionControl::Helper::Factory;
+ my $factory = VWB::VersionControl::Helper::Factory::getIntance();
  my $dbutil = $factory->create('mongodb');
 
 =head1 AUTHOR
