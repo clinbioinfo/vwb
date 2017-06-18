@@ -1,4 +1,4 @@
-package VWB::Sensor::UUID::Manager;
+package VWB::VersionControl::UUID::Manager;
 
 use Moose;
 
@@ -18,11 +18,11 @@ sub getInstance {
 
     if (!defined($instance)){
 
-        $instance = new VWB::Sensor::UUID::Manager(@_);
+        $instance = new VWB::VersionControl::UUID::Manager(@_);
 
         if (!defined($instance)){
 
-            confess "Could not instantiate VWB::Sensor::UUID::Manager";
+            confess "Could not instantiate VWB::VersionControl::UUID::Manager";
         }
     }
 
@@ -41,7 +41,6 @@ sub BUILD {
 }
 
 
-
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
@@ -51,7 +50,7 @@ __END__
 
 =head1 NAME
 
- VWB::Sensor::UUID::Manager
+ VWB::VersionControl::UUID::Manager
  Module for managing the universal unique identifiers
 
 =head1 VERSION
@@ -60,8 +59,8 @@ __END__
 
 =head1 SYNOPSIS
 
- use VWB::Sensor::UUID::Manager;
- my $manager = VWB::Sensor::UUID::Manager::getInstance();
+ use VWB::VersionControl::UUID::Manager;
+ my $manager = VWB::VersionControl::UUID::Manager::getInstance();
  $manager->createFileID();
 
 =head1 AUTHOR
