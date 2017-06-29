@@ -20,7 +20,7 @@ use constant DEFAULT_TEST_MODE => TRUE;
 
 use constant DEFAULT_USERNAME =>  getlogin || getpwuid($<) || $ENV{USER} || "sundaramj";
 
-use constant DEFAULT_OUTDIR => '/tmp/' . $login . '/' . File::Basename::basename($0) . '/' . time();
+use constant DEFAULT_OUTDIR => '/tmp/' . DEFAULT_USERNAME . '/' . File::Basename::basename($0) . '/' . time();
 
 use constant DEFAULT_INDIR => File::Spec->rel2abs(cwd());
 
@@ -186,16 +186,22 @@ sub run {
 
     my $self = shift;
     
-    $self->_deploy_watchers((@_);
+    $self->_deploy_watchers(@_);
+}
+
+sub monitor {
+
+    my $self = shift;
+    
+    $self->_deploy_watchers(@_);
 }
 
 sub _deploy_watchers {
 
     my $self = shift;
     
-    $self->{_logger}->fatal("NOT YET IMPLEMENTED");
+    printYellow("Will deploy watchers");
 }
-
 
 sub registerEvent {
 
@@ -204,7 +210,29 @@ sub registerEvent {
     $self->{_registrar}->registerEvent(@_);
 }
 
+sub registerByJSONFile {
 
+    my $self = shift;
+    my ($json_file) = @_;
+
+    if (!defined($json_file)){
+        $self->{_logger}->logconfess("json_file was not defined");
+    }
+
+    $self->{_registrar}->registerByJSONFile($json_file);
+}
+
+sub registerByJSONString {
+
+    my $self = shift;
+    my ($json_string) = @_;
+
+    if (!defined($json_string)){
+        $self->{_logger}->logconfess("json_string was not defined");
+    }
+
+    $self->{_registrar}->registerByJSONString($json_string);
+}
 
 
 no Moose;

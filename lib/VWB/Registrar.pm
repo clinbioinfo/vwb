@@ -21,7 +21,7 @@ use constant DEFAULT_TEST_MODE => TRUE;
 
 use constant DEFAULT_USERNAME =>  getlogin || getpwuid($<) || $ENV{USER} || "sundaramj";
 
-use constant DEFAULT_OUTDIR => '/tmp/' . $login . '/' . File::Basename::basename($0) . '/' . time();
+use constant DEFAULT_OUTDIR => '/tmp/' . DEFAULT_USERNAME . '/' . File::Basename::basename($0) . '/' . time();
 
 use constant DEFAULT_INDIR => File::Spec->rel2abs(cwd());
 
@@ -198,6 +198,30 @@ sub registerEvent {
     my $self = shift;
 
     $self->{_dbutil}->registerEvent(@_);
+}
+
+sub registerByJSONFile {
+
+    my $self = shift;
+    my ($json_file) = @_;
+
+    if (!defined($json_file)){
+        $self->{_logger}->logconfess("json_file was not defined");
+    }
+
+    printYellow("NOT YET IMPLEMENTED");
+}
+
+sub registerByJSONString {
+
+    my $self = shift;
+    my ($json_string) = @_;
+
+    if (!defined($json_string)){
+        $self->{_logger}->logconfess("json_string was not defined");
+    }
+
+    printYellow("NOT YET IMPLEMENTED");
 }
 
 
