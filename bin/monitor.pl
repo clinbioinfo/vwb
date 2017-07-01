@@ -41,7 +41,10 @@ $|=1; ## do not buffer output stream
 
 ## Command-line arguments
 my (
-    $indir, 
+    $dir, 
+    $file,
+    $file_list_file,
+    $dir_list_file,
     $outdir,
     $config_file,
     $log_level, 
@@ -54,15 +57,18 @@ my (
     );
 
 my $results = GetOptions (
-    'log-level|d=s'                  => \$log_level, 
-    'logfile=s'                      => \$logfile,
-    'config_file=s'                  => \$config_file,
-    'help|h'                         => \$help,
-    'man|m'                          => \$man,
-    'indir=s'                        => \$indir,
-    'outdir=s'                       => \$outdir,
-    'admin_email_address=s'          => \$admin_email_address,
-    'test_mode=s'                    => \$test_mode,
+    'log-level|d=s'          => \$log_level, 
+    'logfile=s'              => \$logfile,
+    'config_file=s'          => \$config_file,
+    'help|h'                 => \$help,
+    'man|m'                  => \$man,
+    'outdir=s'               => \$outdir,
+    'admin_email_address=s'  => \$admin_email_address,
+    'test_mode=s'            => \$test_mode,
+    'file_list_file=s'       => \$file_list_file,
+    'dir_list_file=s'        => \$dir_list_file,
+    'dir=s'                  => \$dir,
+    'file=s'                 => \$file,
     );
 
 &checkCommandLineArguments();
@@ -83,7 +89,6 @@ if (!defined($config_manager)){
 }
 
 my $manager = VWB::Monitor::Manager::getInstance(
-    indir     => $indir,
     outdir    => $outdir,
     test_mode => $test_mode
     );
@@ -91,6 +96,24 @@ my $manager = VWB::Monitor::Manager::getInstance(
 if (!defined($manager)){
     $logger->logdie("Could not instantiate VWB::Monitor::Manager");
 }
+
+
+if (defined($file_list_file)){
+    $manager->setFileListFile($file_list_file);
+}
+
+if (defined($dir_list_file)){
+    $manager->setDirListFile($dir_list_file);
+}
+
+if (defined($file)){
+    $manager->setFile($file);
+}
+
+if (defined($dir)){
+    $manager->setDir($dir);
+}
+
 
 $manager->monitor();
 
@@ -157,15 +180,6 @@ sub checkCommandLineArguments {
         printYellow("--admin-email-address was not specified and therefore was set to '$admin_email_address'");
     }
 
-    if (!defined($indir)){
-
-        $indir = DEFAULT_INDIR;
-
-        printYellow("--indir was not specified and therefore was set to '$indir'");
-    }
-
-    $indir = File::Spec->rel2abs($indir);
-
     if (!defined($outdir)){
 
         $outdir = DEFAULT_OUTDIR;
@@ -193,7 +207,15 @@ sub checkCommandLineArguments {
 
     $logfile = File::Spec->rel2abs($logfile);
 
+    if ((!defined($dir)) && (!defined($file)) && (!defined($file_list_file))  && (!defined($dir_list_file))){
+           
+        $dir = DEFAULT_INDIR;
+
+        printYellow("Neither --dir, --file, --file_list_file nor --dir_list_file were specified so dir was set to '$dir'");
+    }
+
     my $fatalCtr=0;
+
 
     if ($fatalCtr> 0 ){
     	die "Required command-line arguments were not specified\n";

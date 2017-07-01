@@ -8,6 +8,7 @@ use FindBin;
 use File::Slurp;
 use Term::ANSIColor;
 use JSON::Parse 'json_file_to_perl';
+use Linux::Inotify2;
 
 use VWB::Logger;
 use VWB::Config::Manager;
@@ -53,20 +54,43 @@ has 'outdir' => (
     default  => DEFAULT_OUTDIR
     );
 
-has 'indir' => (
-    is       => 'rw',
-    isa      => 'Str',
-    writer   => 'setIndir',
-    reader   => 'getIndir',
-    required => FALSE,
-    default  => DEFAULT_INDIR
-    );
-
 has 'report_file' => (
     is       => 'rw',
     isa      => 'Str',
     writer   => 'setReportFile',
     reader   => 'getReportFile',
+    required => FALSE
+    );
+
+has 'file_list_file' => (
+    is       => 'rw',
+    isa      => 'Str',
+    writer   => 'setFileListFile',
+    reader   => 'getFileListFile',
+    required => FALSE
+    );
+
+has 'file' => (
+    is       => 'rw',
+    isa      => 'Str',
+    writer   => 'setFile',
+    reader   => 'getFile',
+    required => FALSE
+    );
+
+has 'dir_list_file' => (
+    is       => 'rw',
+    isa      => 'Str',
+    writer   => 'setDirListFile',
+    reader   => 'getDirListFile',
+    required => FALSE
+    );
+
+has 'dir' => (
+    is       => 'rw',
+    isa      => 'Str',
+    writer   => 'setDir',
+    reader   => 'getDir',
     required => FALSE
     );
 
@@ -93,6 +117,8 @@ sub BUILD {
     $self->_initConfigManager(@_);
 
     $self->_initRegistrar(@_);
+
+    $self->_initInotify(@_);
 
     $self->{_logger}->info("Instantiated ". __PACKAGE__);
 }
@@ -133,6 +159,18 @@ sub _initRegistrar {
     }
 
     $self->{_registrar} = $registrar;
+}
+
+sub _initInotify {
+
+    my $self = shift;
+
+    my $inotify = new Linux::Inotify2();
+    if (!defined($inotify)){
+        $self->{_logger}->logconfess("Could not instantiate Linux::Inotify2 : $!");
+    }
+
+    $self->{_inotify} = $inotify;
 }
 
 sub _execute_cmd {
@@ -200,7 +238,260 @@ sub _deploy_watchers {
 
     my $self = shift;
     
-    printYellow("Will deploy watchers");
+    my $found_some_asset = FALSE;
+
+    my $file_list_file = $self->getFileListFile();
+
+    if (defined($file_list_file)){
+
+        $self->_process_file_list_file($file_list_file);
+
+        $found_some_asset = TRUE;
+    }
+
+    my $dir_list_file = $self->getDirListFile();
+
+    if (defined($dir_list_file)){
+
+        $self->_process_dir_list_file($dir_list_file);
+
+        $found_some_asset = TRUE;
+    }
+
+
+    my $file = $self->getFile();
+
+    if (defined($file)){
+
+        if (!-e $file){
+            $self->{_logger}->logconfess("file '$file' does not exist");
+        }
+
+        $self->_watch_file($file);
+
+        $found_some_asset = TRUE;
+    }
+
+
+    my $dir = $self->getDir();
+
+    if (defined($dir)){
+
+        if (!-e $dir){
+            $self->{_logger}->logconfess("directory '$dir' does not exist");
+        }
+        
+        $self->_watch_directory($dir);
+
+        $found_some_asset = TRUE;
+    }
+
+
+    if ($found_some_asset){
+
+        $self->{_logger}->info("Alright.   Now going to start watching/polling the assets.");
+
+        printBrightBlue("Now going to start watching/polling the assets.");
+
+        while (TRUE){
+
+            $self->{_inotify}->poll();
+        }
+    }
+    else {
+
+        $self->{_logger}->fatal("There are no assets to monitor");
+
+        printBoldRed("There are no assets to monitor.");
+
+        exit(1);
+    }
+}
+
+sub _process_file_list_file {
+
+    my $self = shift;
+    my ($file_list_file) = @_;
+
+    $self->{_logger}->info("Going to process file_list_file '$file_list_file'");
+
+    $self->{_file_error_ctr} = 0;
+    
+    $self->{_file_error_list} = [];
+
+    my @lines = read_file($file_list_file);
+       
+    foreach my $line (@lines){
+    
+        chomp $line;
+    
+        if ($line =~ m|^\s*$|){
+            next;
+        }
+
+        if ($line =~ m|^\#|){
+            next;
+        }
+
+        if (!-e $line){
+    
+            $self->{_logger}->error("file '$line' does not exist");
+    
+            $self->{_file_error_ctr}++;
+    
+            push(@{$self->{_file_error_list}}, $line);
+        }
+        else {
+            $self->_watch_file($line);        
+        }
+    }
+
+
+    if ($self->{_file_error_ctr} > 0){
+
+        printBoldRed("The following '$self->{_file_error_ctr}' files that do not exist:");
+
+        printBoldRed(join("\n", @{$self->{_file_error_list}}));
+    }
+
+    if ($self->{_watch_file_ctr} > 0){
+        
+        printBrightBlue("The following '$self->{_watch_file_ctr}' files are being watched");
+
+        print join("\n", @{$self->{_watch_file_list}}) . "\n";
+    }
+    else {
+        printBoldRed("Not watching any files");
+    }
+}
+
+
+sub _process_dir_list_file {
+
+    my $self = shift;
+    my ($dir_list_file) = @_;
+
+    $self->{_logger}->info("Going to process dir_list_file '$dir_list_file'");
+
+    $self->{_dir_error_ctr} = 0;
+    
+    $self->{_dir_error_list} = [];
+
+
+    my @lines = read_file($dir_list_file);
+       
+    foreach my $line (@lines){
+    
+        chomp $line;
+    
+        if ($line =~ m|^\s*$|){
+            next;
+        }
+
+        if ($line =~ m|^\#|){
+            next;
+        }
+
+        if (!-e $line){
+    
+            $self->{_logger}->error("directory '$line' does not exist");
+    
+            $self->{_dir_error_ctr}++;
+    
+            push(@{$self->{_dir_error_list}}, $line);
+        }
+        else {
+            $self->_watch_directory($line);        
+        }
+    }
+
+
+    if ($self->{_dir_error_ctr} > 0){
+
+        printBoldRed("The following '$self->{_dir_error_ctr}' directories that do not exist:");
+
+        printBoldRed(join("\n", @{$self->{_dir_error_list}}));
+    }
+
+    if ($self->{_watch_dir_ctr} > 0){
+        
+        printBrightBlue("The following '$self->{_watch_dir_ctr}' directories are being watched");
+
+        print join("\n", @{$self->{_watch_dir_list}}) . "\n";
+    }
+    else {
+        printBoldRed("Not watching any directories");
+    }
+}
+
+
+sub _watch_file {
+
+    my $self = shift;
+    my ($file) = @_;
+
+    $self->{_logger}->info("Going to watch file '$file'");
+
+    $self->{_inotify}->watch($file, IN_ACCESS|IN_MODIFY|IN_ATTRIB|IN_CLOSE_WRITE|IN_CLOSE_NOWRITE|IN_OPEN|IN_MOVED_FROM|IN_MOVED_TO|IN_CREATE|IN_DELETE|IN_DELETE_SELF|IN_MOVE_SELF|IN_ALL_EVENTS|IN_ONESHOT|IN_ONLYDIR|IN_DONT_FOLLOW|IN_MASK_ADD, sub {
+        
+        my $e = shift;
+        
+        my $name = $e->fullname;
+        if (!defined($name)){
+            $self->{_logger}->logconfess("name was not defined for event : " . Dumper $e);
+        }
+        
+        my $mask = $e->mask;
+        if (!defined($mask)){
+            $self->{_logger}->logconfess("mask was not defined for event : " . Dumper $e);
+        }
+
+        $self->{_logger}->info("Encountered '$mask' event for '$name'");
+
+        print "Encountered '$mask' event for '$name\n";
+    });
+
+    $self->{_watch_file_ctr}++;
+
+    push(@{$self->{_watch_file_list}}, $file);
+}
+
+sub _watch_directory {
+
+    my $self = shift;
+    my ($dir) = @_;
+
+    $self->{_logger}->info("Going to watch directory '$dir'");
+
+    $self->{_inotify}->watch($dir, IN_ACCESS|IN_MODIFY|IN_ATTRIB|IN_CLOSE_WRITE|IN_CLOSE_NOWRITE|IN_OPEN|IN_MOVED_FROM|IN_MOVED_TO|IN_CREATE|IN_DELETE|IN_DELETE_SELF|IN_MOVE_SELF|IN_ALL_EVENTS|IN_ONESHOT|IN_ONLYDIR|IN_DONT_FOLLOW|IN_MASK_ADD, sub {
+        
+        my $e = shift;
+        
+        my $name = $e->fullname;
+        if (!defined($name)){
+            $self->{_logger}->logconfess("name was not defined for event : " . Dumper $e);
+        }
+        
+        my $mask = $e->mask;
+        if (!defined($mask)){
+            $self->{_logger}->logconfess("mask was not defined for event : " . Dumper $e);
+        }
+
+        $self->{_logger}->info("Encountered '$mask' event for '$name'");
+    });
+
+    $self->{_watch_dir_ctr}++;
+
+    push(@{$self->{_watch_dir_list}}, $dir);
+
+}
+
+sub printBrightBlue {
+
+    my ($msg) = @_;
+    print color 'bright_blue';
+    print $msg . "\n";
+    print color 'reset';
 }
 
 sub registerEvent {
