@@ -1,6 +1,7 @@
 import logging
 import VWB.Registrar
 import VWB.Assets.Watcher
+import VWB.Profiler
 
 class Manager():
 	'''A class for managing the orchestration of VWB activities.'''
@@ -25,6 +26,8 @@ class Manager():
 		
 		self._registrar = VWB.Registrar.Registrar.getInstance()
 
+		self._profiler = VWB.Profiler.Profiler.getInstance()
+		
 		self._logger.info("Instantiated VWB.Repository.Manager")
 		
 
@@ -43,3 +46,13 @@ class Manager():
 	def registerAsset(self, asset):
 
 		self._registrar.registerAsset(asset)
+
+
+	def profileAndRegisterAsset(self, asset):
+
+		self._profiler.profile(asset)
+
+		self._registrar.registerAsset(asset)
+
+		self._logger.info("Have profiled and registered asset %s" % asset.getPath())
+

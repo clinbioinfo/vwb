@@ -16,7 +16,7 @@ class Asset():
 
 
 	def setPath(self, path):		
-		
+
 		self._path = path
 
 	def getPath(self):
@@ -30,6 +30,12 @@ class Asset():
 	def getChecksum(self):
 
 		return self._checksum
+
+	def setProfile(self, profile):
+		self._lookup = profile
+
+	def getProfile(self):
+		return self._lookup
 
 	def addMetaData(self, key, val):
 
