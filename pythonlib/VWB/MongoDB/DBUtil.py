@@ -23,7 +23,7 @@ class DBUtil():
 
 		self._mongo_url = 'mongodb://localhost:3001'
 		self._mongo_database_name = 'meteor'
-		self._mongo_collection_name = 'assets'
+		self._mongo_collection_name = 'files'
 
 		self._initMongoClient()
 
@@ -42,7 +42,7 @@ class DBUtil():
 	def insertAssetProfile(self, asset):
 		''' Insert a profile object for the corresponding asset/file '''
 		## Insert logic to insert the profile meta-data pertaining to the asset into the MongoDB
-		## database in the assets collection.
+		## database in the files collection.
 		## Will need to come up with logic to 
 		self._logger.info("Going to monitor asset %s" % asset.getPath())
 
