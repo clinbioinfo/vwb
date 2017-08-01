@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 import pymongo
 from pymongo import MongoClient
+import calendar
+import time
 
 import sys
 import os
 from stat import *
 import datetime
 import pwd
+import hashlib
 
 indir = '/home/sundaramj/dev-utils'
 
@@ -14,7 +17,35 @@ client = MongoClient('mongodb://localhost:3001/')
 
 
 database_name = 'meteor'
-collection_name = 'assets'
+collection_name = 'files'
+
+def md5(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
+def calculateMD5(filename, block_size=2**20):
+	"""Returns MD% checksum for given file.
+	"""
+	
+
+	md5 = hashlib.md5()
+	try:
+		file = open(filename, 'rb')
+		while True:
+			data = file.read(block_size)
+			if not data:
+				break
+			md5.update(data)
+	except IOError:
+		print('File \'' + filename + '\' not found!')
+		return None
+	except:
+		return None
+	return md5.hexdigest
 
 
 ## get handle for our database of interest: the meteor database
@@ -32,9 +63,21 @@ for path, subdirs, files in os.walk(indir):
 
 		file_ctr += 1
 
+
 		file_path = os.path.join(path, name)
 
+		checksum = md5(file_path)
+
+		print("checksum is %s" % checksum)
+
+		uuid = calendar.timegm(time.gmtime())
+
+		str_uuid = str(uuid)
+
+		final_uuid = str_uuid + '_'  + checksum #calculateMD5(file_path)
+
 		lookup = {
+			'uuid' : final_uuid,
 			'basename' : os.path.basename(file_path),
 			'path' : file_path,
 			'mode'  : os.stat(file_path)[ST_MODE],
