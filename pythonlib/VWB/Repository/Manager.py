@@ -1,8 +1,11 @@
+import os
 import logging
+import VWB.Asset
 import VWB.Registrar
 import VWB.Assets.Watcher
 import VWB.Profiler
 import VWB.UUID.Manager
+import VWB.Config.Manager
 
 class Manager():
 	'''A class for managing the orchestration of VWB activities.'''
@@ -22,6 +25,8 @@ class Manager():
 	def __init__(self):
 		
 		self._logger = logging.getLogger(__name__)
+
+		self._config_manager = VWB.Config.Manager.Manager.getInstance()
 
 		self._watcher = VWB.Assets.Watcher.Watcher.getInstance()
 		
@@ -59,3 +64,45 @@ class Manager():
 
 		self._logger.info("Have profiled and registered asset %s" % asset.getPath())
 
+
+	def loadInitialFilesIntoMongo(self, indir):
+
+
+		if not os.path.isdir(indir):
+			self._logger.critical("%s is not a directory" % indir)
+			print("%s is not a directory" % indir)
+			exit(1)
+
+
+		self._logger.info("Going to register the files in directory %s" % indir)
+
+		file_ctr = 0
+
+		insert_ctr = 0
+
+
+		for path, subdirs, files in os.walk(indir):
+
+			for name in files:
+
+				file_ctr += 1
+
+				file_path = os.path.join(path, name)
+
+				asset = VWB.Asset.Asset(file_path)
+
+				self.profileAndRegisterAsset(asset)
+
+				insert_ctr += 1
+
+
+		print("Processed %d files" % file_ctr)
+
+		collection_name = self._config_manager.getCollectionName()
+		
+		database_name = self._config_manager.getDatabaseName()
+
+		print("Inserted %d documents/records into the %s collection of database %s" % (insert_ctr, collection_name, database_name))
+
+
+		self._logger.info("Finished processing all files in directory %s" % indir)
