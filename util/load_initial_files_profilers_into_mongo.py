@@ -2,12 +2,38 @@ from colorama import init, Fore, Back, Style
 import os
 import sys
 import logging
+import argparse
 
 
 ## This is precarious declaration of mongodb configuration settings
 ## not currently passed into the VWB.MongoDB.DBUtil object.
 collection_name = 'files'
 database_name = 'meteor'
+
+cwd = os.getcwd()
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-v', "--verbose", help="set verbose mode (default is True)", action="store_true", default=True)
+parser.add_argument('-i', "--indir", help="input directory (default is [current working directory]", default=cwd)
+parser.add_argument('-l', "--logfile", help="output log file (default is [current working directory]/my.log)", default=os.path.join(cwd, 'my.log'))
+
+args = parser.parse_args()
+
+
+if not args.verbose:	
+	print("--verbose was not specified and therefore was set to default %d" % args.verbose)
+
+if not args.indir:
+	print("--indir was not specified and therefore was set to default %d" % args.indir)	
+
+if args.verbose:
+	print("Being verbose")
+else:
+	print("Not being verbose")
+
+
+print("The input directory is %s" % args.indir)
+print("The output log file is %s" % args.logfile)
 
 
 init()
