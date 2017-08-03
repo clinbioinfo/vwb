@@ -5,6 +5,7 @@ import datetime
 import pwd
 import logging
 import VWB.Checksum.Helper
+import VWB.UUID.Manager
 
 class Profiler():
 	'''A class for profiling the asset.'''
@@ -26,9 +27,15 @@ class Profiler():
 
 		self._helper = VWB.Checksum.Helper.Helper.getInstance()
 
+		self._uuid_manager = VWB.UUID.Manager.Manager.getInstance()
+
 		self._logger.info("Instantiated VWB.Asset.Profiler")
 
 
+	def profileAsset(self, asset):
+
+		return self.profile(asset)
+		
 
 	def profile(self, asset):
 		## Insert logic to derive the MD5 checksum of the specified file
@@ -39,11 +46,15 @@ class Profiler():
 
 		checksum = self._helper.getChecksum(file_path)
 
+		uuid = self._uuid_manager.getUUID(checksum)
+
+
 		asset.setChecksum(checksum) 
 		## redundant at this time considering we're inserting the checksum
 		## into the profile dictionary below
 
 		profile = {
+			'uuid' : uuid,
 			'path' : file_path,
 			'checksum' : checksum,
 			'basename' : os.path.basename(file_path),
@@ -67,4 +78,6 @@ class Profiler():
 		asset.setProfile(profile)	
 
 		self._logger.info("Finished profiling file %s" % file_path)		
+
+		return profile
 

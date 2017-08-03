@@ -29,6 +29,6 @@ class Registrar():
 
 	def registerAsset(self, asset):		
 		
-		profile = self.profiler.profileAsset(asset)
+		profile = self._profiler.profileAsset(asset)
 		
-		self.dbutil.insertProfile(asset, profile)
+		self._dbutil.insertProfile(asset, profile)

@@ -3,6 +3,13 @@ import os
 import sys
 import logging
 
+
+## This is precarious declaration of mongodb configuration settings
+## not currently passed into the VWB.MongoDB.DBUtil object.
+collection_name = 'files'
+database_name = 'meteor'
+
+
 init()
 
 def _check_directory(dir):
@@ -27,8 +34,6 @@ _check_directory(indir)
 
 # curdir = os.getcwd() + '/../pythonlib/'
 
-
-
 curdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../pythonlib")
 _check_directory(curdir)
 
@@ -37,8 +42,10 @@ print(Style.RESET_ALL)
 
 sys.path.append(curdir)
 
+
 import VWB.Repository.Manager
 import VWB.Asset
+
 
 
 logger = logging.getLogger(__name__)

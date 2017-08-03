@@ -39,6 +39,12 @@ class DBUtil():
 
 		self._collection = self._db_handle[self._mongo_collection_name]
 
+
+	def insertProfile(self, asset, profile):
+
+		self.insertAssetProfile(asset)
+
+
 	def insertAssetProfile(self, asset):
 		''' Insert a profile object for the corresponding asset/file '''
 		## Insert logic to insert the profile meta-data pertaining to the asset into the MongoDB

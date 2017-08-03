@@ -2,6 +2,7 @@ import logging
 import VWB.Registrar
 import VWB.Assets.Watcher
 import VWB.Profiler
+import VWB.UUID.Manager
 
 class Manager():
 	'''A class for managing the orchestration of VWB activities.'''
@@ -27,7 +28,9 @@ class Manager():
 		self._registrar = VWB.Registrar.Registrar.getInstance()
 
 		self._profiler = VWB.Profiler.Profiler.getInstance()
-		
+
+		self._uuid_manager = VWB.UUID.Manager.Manager.getInstance()
+
 		self._logger.info("Instantiated VWB.Repository.Manager")
 		
 

@@ -1,4 +1,5 @@
 import logging
+import hashlib
 
 class Helper():
 	'''A class for helping with getting the MD5 checksum of assets.'''
@@ -22,7 +23,13 @@ class Helper():
 
 
 	def getChecksum(self, infile):
-		## Insert logic to derive the MD5 checksum of the specified file
-		self._logger.info("Going to derive the MD5 checksum for file %" % infile)
-		
-		return "BS-laksjflasjflkdsjflkjsdlfjlssdflksdjflkds"
+	    
+	    self._logger.info("Going to derive the MD5 checksum for file %s" % infile)
+
+	    hash_md5 = hashlib.md5()
+
+	    with open(infile, "rb") as f:
+	        for chunk in iter(lambda: f.read(4096), b""):
+	            hash_md5.update(chunk)
+
+	    return hash_md5.hexdigest()
