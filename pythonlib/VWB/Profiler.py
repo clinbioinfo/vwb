@@ -1,6 +1,7 @@
 import sys
 import os
 from stat import *
+from time import gmtime, strftime
 import datetime
 import pwd
 import logging
@@ -53,11 +54,17 @@ class Profiler():
 		## redundant at this time considering we're inserting the checksum
 		## into the profile dictionary below
 
+		basename = os.path.basename(file_path)
+
+		desc_date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+
+		desc = "Auto-generated description for file '" + basename + "' created on '" + desc_date + "'"
+
 		profile = {
 			'uuid' : uuid,
 			'path' : file_path,
 			'checksum' : checksum,
-			'basename' : os.path.basename(file_path),
+			'basename' : basename,
 			'mode'  : os.stat(file_path)[ST_MODE],
 			'inode' : os.stat(file_path)[ST_INO],
 			'dev'   : os.stat(file_path)[ST_DEV],
@@ -72,7 +79,10 @@ class Profiler():
 			'ctime' : os.stat(file_path)[ST_CTIME],
 			'date_accessed' : datetime.datetime.fromtimestamp(os.stat(file_path)[ST_ATIME]),
 			'date_modified' : datetime.datetime.fromtimestamp(os.stat(file_path)[ST_MTIME]),
-			'date_created' : datetime.datetime.fromtimestamp(os.stat(file_path)[ST_CTIME])
+			'date_created' : datetime.datetime.fromtimestamp(os.stat(file_path)[ST_CTIME]),
+			'annotations' : [],
+			'comments' : [],
+			'desc' : desc
 		}
 
 		asset.setProfile(profile)	
