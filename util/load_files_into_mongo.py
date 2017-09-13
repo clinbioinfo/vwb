@@ -11,7 +11,7 @@ import datetime
 import pwd
 import hashlib
 
-indir = '/home/sundaramj/dev-utils'
+indir = '/home/sundaramj/projects/dev-utils'
 
 client = MongoClient('mongodb://localhost:3001/')
 
@@ -94,7 +94,9 @@ for path, subdirs, files in os.walk(indir):
 			'ctime' : os.stat(file_path)[ST_CTIME],
 			'date_accessed' : datetime.datetime.fromtimestamp(os.stat(file_path)[ST_ATIME]),
 			'date_modified' : datetime.datetime.fromtimestamp(os.stat(file_path)[ST_MTIME]),
-			'date_created' : datetime.datetime.fromtimestamp(os.stat(file_path)[ST_CTIME])
+			'date_created' : datetime.datetime.fromtimestamp(os.stat(file_path)[ST_CTIME]),
+			'annotations' : [],
+			'comments' : []
 		}
 
 
