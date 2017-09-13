@@ -5,10 +5,36 @@ import logging
 import argparse
 
 
+##-------------------------------------------
+## check_directory() will check whether the
+## thing specified is in fact a directory and
+## not something else.
+##-------------------------------------------
+def check_directory(dir):
+
+	if not os.path.isdir(dir):
+
+		print(Fore.RED + "'%s' is not a directory" % dir)
+		print(Style.RESET_ALL)
+		exit(1)
+
+
+
 ## This is precarious declaration of mongodb configuration settings
 ## not currently passed into the VWB.MongoDB.DBUtil object.
 # collection_name = 'files'
 # database_name = 'meteor'
+
+curdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../pythonlib")
+
+check_directory(curdir)
+
+print(Fore.YELLOW + "Appended %s to path" % curdir)
+
+print(Style.RESET_ALL)
+
+sys.path.append(curdir)
+
 
 import VWB.Logger
 import VWB.Config.Manager
@@ -23,19 +49,6 @@ config_manager = None
 cwd = os.getcwd()
 # indir = '/home/sundaramj/dev-utils'
 
-
-##-------------------------------------------
-## check_directory() will check whether the
-## thing specified is in fact a directory and
-## not something else.
-##-------------------------------------------
-def check_directory(dir):
-
-	if not os.path.isdir(dir):
-
-		print(Fore.RED + "'%s' is not a directory" % dir)
-		print(Style.RESET_ALL)
-		exit(1)
 
 
 ##-------------------------------------------
