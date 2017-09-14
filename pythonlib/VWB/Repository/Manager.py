@@ -1,4 +1,6 @@
+from colorama import init, Fore, Back, Style
 import os
+import sys
 import logging
 import VWB.Asset
 import VWB.Registrar
@@ -6,6 +8,7 @@ import VWB.Assets.Watcher
 import VWB.Profiler
 import VWB.UUID.Manager
 import VWB.Config.Manager
+import inotify.adapters
 
 class Manager():
 	'''A class for managing the orchestration of VWB activities.'''
@@ -106,3 +109,65 @@ class Manager():
 
 
 		self._logger.info("Finished processing all files in directory %s" % indir)
+
+	def watchDirectory(self, indir):
+		'''
+			Will use inotify to monitor files in the specified directory.
+		'''
+		if not os.path.isdir(indir):
+			self._logger.critical("%s is not a directory" % indir)
+			print("%s is not a directory" % indir)
+			exit(1)
+
+
+		self._logger.info("Going to monitor files in directory %s"  % indir)
+
+
+		dir = indir.encode('utf-8')
+		# i = inotify.adapters.InotifyTree(indir)
+		try:
+			# i = inotify.adapters.InotifyTree(b'/home/sundaramj/projects/vwb')
+			i = inotify.adapters.InotifyTree(dir)
+		except:
+			print(Fore.RED + "Unexpected error during instantiation of inotify.adapters.InotifyTree")
+			print(Style.RESET_ALL)
+
+
+		try:
+		    for event in i.event_gen():
+
+		        if event is not None:
+
+		            (header, type_names, watch_path, filename) = event
+		            
+		            file_path = os.path.join(watch_path.decode('utf-8'), filename.decode('utf-8'))
+		            
+		            if os.path.isfile(file_path):
+
+		                if 'IN_CLOSE_WRITE' in type_names:
+
+		                    self._logger.info("WD=(%d) MASK=(%d) COOKIE=(%d) LEN=(%d) MASK->NAMES=%s "
+		                             "WATCH-PATH=[%s] FILENAME=[%s]",
+		                             header.wd, 
+		                             header.mask, 
+		                             header.cookie, 
+		                             header.len, 
+		                             type_names,
+		                             watch_path.decode('utf-8'), filename.decode('utf-8'))
+
+		                    print("file '%s' was written to" % file_path)
+
+		                    asset = VWB.Asset.Asset(file_path)
+
+		                    self.profileAndRegisterAsset(asset)
+
+
+		except:
+			print(Fore.RED + "Unexpected error:", sys.exc_info()[0])
+			print(Style.RESET_ALL)
+
+		finally:
+			print("Exiting")
+			sys.exit(0)
+
+

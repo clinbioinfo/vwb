@@ -7,6 +7,8 @@ import pwd
 import logging
 import VWB.Checksum.Helper
 import VWB.UUID.Manager
+import socket
+
 
 class Profiler():
 	'''A class for profiling the asset.'''
@@ -63,6 +65,8 @@ class Profiler():
 		profile = {
 			'uuid' : uuid,
 			'path' : file_path,
+			'hostname' : socket.gethostname(),
+			'ip_address' : socket.gethostbyname(socket.gethostname()),
 			'checksum' : checksum,
 			'basename' : basename,
 			'mode'  : os.stat(file_path)[ST_MODE],
