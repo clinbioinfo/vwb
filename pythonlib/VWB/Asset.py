@@ -12,7 +12,7 @@ class Asset():
 
 		self._lookup = {}
 
-		self._logger.info("Instantiated VWB.Asset")
+		self._logger.info("Instantiated VWB.Asset for path '%s'"  % path)
 
 
 	def setPath(self, path):		
