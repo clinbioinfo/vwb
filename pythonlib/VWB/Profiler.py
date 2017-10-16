@@ -49,10 +49,12 @@ class Profiler():
 
 		checksum = self._helper.getChecksum(file_path)
 
+		asset.setChecksum(checksum) 
+
 		uuid = self._uuid_manager.getUUID(checksum)
 
+		self._logger.info("Generated uuid '%s' for checksum '%s' for file '%s'" % (uuid, checksum, file_path))
 
-		asset.setChecksum(checksum) 
 		## redundant at this time considering we're inserting the checksum
 		## into the profile dictionary below
 
@@ -61,6 +63,22 @@ class Profiler():
 		desc_date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
 		desc = "Auto-generated description for file '" + basename + "' created on '" + desc_date + "'"
+
+
+		date_accessed = datetime.datetime.fromtimestamp(os.stat(file_path)[ST_ATIME])
+
+		date_accessed = date_accessed.strftime("%Y-%m-%d %H:%M:%S")
+		
+
+		date_modified = datetime.datetime.fromtimestamp(os.stat(file_path)[ST_MTIME])
+
+		date_modified = date_modified.strftime("%Y-%m-%d %H:%M:%S")
+		
+
+		date_created  = datetime.datetime.fromtimestamp(os.stat(file_path)[ST_CTIME])
+
+		date_created  = date_created.strftime("%Y-%m-%d %H:%M:%S")
+		
 
 		profile = {
 			'uuid' : uuid,
@@ -81,9 +99,9 @@ class Profiler():
 			'atime' : os.stat(file_path)[ST_ATIME],
 			'mtime' : os.stat(file_path)[ST_MTIME],
 			'ctime' : os.stat(file_path)[ST_CTIME],
-			'date_accessed' : datetime.datetime.fromtimestamp(os.stat(file_path)[ST_ATIME]),
-			'date_modified' : datetime.datetime.fromtimestamp(os.stat(file_path)[ST_MTIME]),
-			'date_created' : datetime.datetime.fromtimestamp(os.stat(file_path)[ST_CTIME]),
+			'date_accessed' : date_accessed,
+			'date_modified' : date_modified,
+			'date_created' : date_created,
 			'annotations' : [],
 			'comments' : [],
 			'desc' : desc
