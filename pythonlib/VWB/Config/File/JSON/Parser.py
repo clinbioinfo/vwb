@@ -1,4 +1,5 @@
 import json
+import sys
 
 class Parser():
 	'''A class for parsing the configuration file conf/vwb.json.'''
@@ -31,7 +32,7 @@ class Parser():
 	def getLogLevel(self):		
 
 		if 'logging' in self._json_data:
-			if 'level' in self._json_data:
+			if 'level' in self._json_data['logging']:
 				return self._json_data['logging']['level']
 
 		return None
@@ -39,15 +40,19 @@ class Parser():
 	def getLogFormat(self):		
 
 		if 'logging' in self._json_data:
-			if 'format' in self._json_data:
+			if 'format' in self._json_data['logging']:
 				return self._json_data['logging']['format']
+			else:
+				raise Exception("format does not exist in logging")
+		else:
+			raise Exception("logging does not exist")
 
 		return None
 
 	def getLogDateFormat(self):		
 
 		if 'logging' in self._json_data:
-			if 'datefmt' in self._json_data:
+			if 'datefmt' in self._json_data['logging']:
 				return self._json_data['logging']['datefmt']
 
 		return None
