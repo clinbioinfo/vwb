@@ -8,7 +8,7 @@ cwd = os.getcwd()
 
 DEFAULT_CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../conf/vwb.json")
 
-DEFAULT_LOG_FILE = os.path.join(cwd, 'my.log')
+DEFAULT_LOG_FILE = os.path.join(cwd, 'file_watcher.log')
 
 
 DEFAULT_MONGODB_DATABASE_NAME = 'meteor'
@@ -121,7 +121,7 @@ def check_command_line_args():
 
     if not args.logfile:
         args.logfile = DEFAULT_LOG_FILE
-        print(Fore.YELLOW + "--config_file was not specified and therefore was set to default %s" % args.config_file) 
+        print(Fore.YELLOW + "--logfile was not specified and therefore was set to default %s" % args.logfile) 
         print(Style.RESET_ALL)
 
     if not args.config_file:
