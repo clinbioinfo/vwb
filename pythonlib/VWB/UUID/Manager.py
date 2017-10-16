@@ -29,6 +29,6 @@ class Manager():
 
 		str_uuid = str(uuid_time) + '_' + token
 
-		self._logger.info("Generated uuid %s for token %s" % (str_uuid, token))
+		self._logger.info("Generated uuid '%s' for token '%s'" % (str_uuid, token))
 
 		return str_uuid
