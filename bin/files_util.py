@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import os
+from stat import *
 
 DEFAULT_INDIR = '/home/sundaramj/vwb/'
 
@@ -10,12 +11,32 @@ indir = DEFAULT_INDIR
 
 file_ctr = 0
 file_list = []
+file_lookup = {}
 
 dir_ctr = 0
 dir_list = []
 
 unknown_ctr = 0
 unknown_list = []
+
+
+def get_file_stat(file_path):
+	''''''
+	global file_lookup
+	
+	file_lookup[file_path] = {
+		mode : os.stat(file_path)[ST_MODE],
+		inode : os.stat(file_path)[ST_INODE],
+		device : os.stat(file_path)[ST_DEV],
+		nlink : os.stat(file_path)[ST_NLINK],
+		uid : os.stat(file_path)[ST_UID],
+		gid : os.stat(file_path)[ST_GID],
+		atime : os.stat(file_path)[ST_ATIME],
+		mtime : os.stat(file_path)[ST_MTIME],
+		ctime : os.stat(file_path)[ST_CTIME]
+	}
+
+
 
 for path, subdirs, files in os.walk(indir):
 
@@ -26,6 +47,7 @@ for path, subdirs, files in os.walk(indir):
     	if os.path.isfile(file_path):
     		file_ctr += 1
     		file_list.append(file_path)
+    		get_file_stat(file_path)
     	else:
     		if os.path.isdir(file_path):
     			dir_ctr += 1
