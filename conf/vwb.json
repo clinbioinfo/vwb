@@ -1,0 +1,14 @@
+{
+	"logging" : {
+		"level" : "INFO",
+		"format" : "%(asctime)s,%(msecs)d %(levelname)-8s [%(pathname)s:%(lineno)d] %(message)s",
+	    "datefmt" : "%d-%m-%Y:%H:%M:%S"
+	},
+	"uuid-type" : "default",
+	"database-type" : "mongodb",
+	"database-connectivity" : {
+		"database-name" : "meteor",
+		"collection-name" : "files",
+		"uri" : "mongodb://localhost:3001"
+	}
+}
